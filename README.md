@@ -5,3 +5,5 @@ scale also perhaps the rocket is not reusable until later so Metal input). Jetpa
 material, perhaps upon retrieving allows to create interspatial portals.
 
 Make the components of the game modular, efficient and easily expandable
+
+Use GLFW (Graphics Library Framework) to create an application window to draw in and to handle keyboard, mouse and joystick input.
