@@ -3,6 +3,8 @@
 #include <chrono>
 #include <sys/time.h>
 #include <ctime>
+#include <thread>
+#include <cmath>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -21,8 +23,8 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 3286;
+const unsigned int SCR_HEIGHT = 1080;
 
 const char *vertexShaderSource = "#version 330 core\n"
                                  "layout (location = 0) in vec3 aPos;\n"
@@ -143,46 +145,73 @@ int main()
 
     // uncomment this call to draw in wireframe polygons.
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    auto millisec_since_epoch_current = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+
+    // How many milliseconds between each tick (e.g. 20 ticks per second yields one tick every 50 milliseconds, i.e. 1000 / 20)
+    int tick_rate = round(1000 / 20.0);
+
+    int initial_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    int ticked_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    int temp = 0;
+    // int *ticked_time_ptr;
+    // *ticked_time_ptr = *initial_time_ptr + 500;
     bool colour_red = true;
 
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
     {
-        // input
-        // -----
-        processInput(window);
-        // millisec_since_epoch_current = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-        // cout << millisec_since_epoch_current << "\n";
-        // cout << "Time between frames: " << duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count() - millisec_since_epoch_current;
-
-        // render
-        // ------
-        if (colour_red)
+        // if (*ticked_time_ptr >= *initial_time_ptr + 500)
+        ticked_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+        temp = ticked_time - initial_time;
+        if (temp >= tick_rate)
         {
-            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-            colour_red = false;
+            // input
+            // -----
+            processInput(window);
+            // millisec_since_epoch_current = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+            // cout << millisec_since_epoch_current << "\n";
+            // cout << "Time between frames: " << duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count() - millisec_since_epoch_current;
+            cout << "Tick executed: "
+                 << "\n";
+
+            // render
+            // ------
+            if (colour_red)
+            {
+                glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+                colour_red = false;
+            }
+            else
+            {
+                glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+                colour_red = true;
+            }
+
+            // glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            // draw our first triangle
+            glUseProgram(shaderProgram);
+            glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+            // glBindVertexArray(0); // no need to unbind it every time
+
+            // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+            // -------------------------------------------------------------------------------
+            glfwSwapBuffers(window);
+            glfwPollEvents();
+
+            // std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+            // add a system whereby no more than 20 ticks will happen per second but if fewer do then the program will slow down time instead of just skipping frames or whatever
+
+            //*initial_time_ptr = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+            initial_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         }
         else
         {
-            glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-            colour_red = true;
+            cout << "Milliseconds since last frame: " << temp << "\n";
         }
-
-        // glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        // draw our first triangle
-        glUseProgram(shaderProgram);
-        glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        // glBindVertexArray(0); // no need to unbind it every time
-
-        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-        // -------------------------------------------------------------------------------
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        //*ticked_time_ptr = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     }
 
     // optional: de-allocate all resources once they've outlived their purpose:
