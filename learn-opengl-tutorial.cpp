@@ -12,6 +12,7 @@
 using namespace std;
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+void processInput(GLFWwindow *window);
 
 int main()
 {
@@ -52,6 +53,8 @@ int main()
     // We can create many more different callback functions between setting up the window and before the render loop starts.
     // For example, we can make a callback function to process joystick inputs, error messages, keypresses, etc.
 
+    // Sets the color the screen will be set to when glClear(GL_COLOR_BUFFER_BIT); is called
+    glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
     // The render loop will prevent the window from immediately closing, this is where you can handle user input or render
     // more objects.
 
@@ -59,12 +62,41 @@ int main()
     while (!glfwWindowShouldClose(window))
     {
         // Do stuff
-        }
 
+        // Check the user's inputs and perform actions dependent on them
+        processInput(window);
+
+        // Re-renders the screen with the updated pixel values (i.e. the next frame)
+        glfwSwapBuffers(window);
+        // Windowing applications apply a double buffer to circumvent the flickering issue single buffers can cause
+        // Instead swapping between buffers instead of modifying the currently in use buffer
+
+        // Checks all the callback functions
+        glfwPollEvents();
+    }
+
+    // Similar to how in python we like to f.close() after we're done using files, here we close glfw to clean up all the
+    // resources glfw was using
+    glfwTerminate();
     return 0;
 }
 
 void framebuffer_size_callback(GLFWwindow *, int width, int height)
 {
     glViewport(0, 0, width, height);
+}
+
+void processInput(GLFWwindow *window)
+{
+    // If, while the last glfwPollEvents(); was called, the user was pressing '0', close the window
+    if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS)
+    {
+        glfwSetWindowShouldClose(window, true);
+    }
+
+    // If the user is pressing '1' while the glfwPollEvents(); method is being called, clear the screen
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+    {
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
 }
